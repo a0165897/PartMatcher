@@ -142,6 +142,15 @@ typedef struct configuration //公式中范围的配置文件
     int phase_flag;//曲轴相位角的选配 0-平均 1-同时满足
     double delta_c;//理论侧隙
     double t6;//相位角补偿值
+
+    double pwc_d1_dimension;  //针齿圆直径尺寸PinWheelHousing
+    double pwcc_D2_dimension;  //针齿中心圆尺寸PinWheelHousing
+    double wa_h2_dimension;   //齿槽高尺寸PinWheelHousing
+    double acbb_H2_dimension;  //行星架卡簧槽高度PlanetCarrier
+    double ca_H1_dimension;   //行星架角接触球轴承高度尺寸PlanetCarrier
+    double ecc_h1_dimension;  //两个偏心圆柱高度h1尺寸CrankShaft
+    double cg_Wk_dimension;   //摆线轮公法线尺寸CycloidGear
+
 }config;
 
 

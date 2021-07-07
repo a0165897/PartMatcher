@@ -131,7 +131,9 @@ bool partData::initializeParts(QXlsx::Document& excelBook,partType type){
     StringTable parameterId = getParameterIdTable(excelBook);
     //3.找到零件的首位列序号
     auto [partBegin,partNum] = findPartListLocation(excelBook,parameterId);
-    //4.读入数据
+    //4.找到config里的列
+    int dimensionCol = lookFor(excelBook,QStringLiteral("Dimension尺寸"),[](auto a,auto b){return a==b;},1,1,20,10).col;
+    //5.读入数据
     switch(type){
         case PlanetCarrier:{
             this->PlanetCarrierList = QVector<pc>(partNum);
@@ -144,6 +146,8 @@ bool partData::initializeParts(QXlsx::Document& excelBook,partType type){
                  PlanetCarrierList[i].acbb_H2 = getPartValue(excelBook,parameterId[0][5],parameterId[1][5],partBegin.col+i);
                  PlanetCarrierList[i].ca_H1 = getPartValue(excelBook,parameterId[0][6],parameterId[1][6],partBegin.col+i);
             }
+            configs.acbb_H2_dimension = getPartValue(excelBook,parameterId[0][5],parameterId[1][5],dimensionCol);
+            configs.ca_H1_dimension = getPartValue(excelBook,parameterId[0][6],parameterId[1][6],dimensionCol);
             break;
         }
         case PinWheelHousing:{
@@ -154,6 +158,9 @@ bool partData::initializeParts(QXlsx::Document& excelBook,partType type){
                 PinWheelHousingList[i].pwcc_D2 = getPartValue(excelBook,parameterId[0][2],parameterId[1][2],partBegin.col+i);
                 PinWheelHousingList[i].wa_h2 = getPartValue(excelBook,parameterId[0][3],parameterId[1][3],partBegin.col+i);
             }
+            configs.pwc_d1_dimension = getPartValue(excelBook,parameterId[0][1],parameterId[1][1],dimensionCol);
+            configs.pwcc_D2_dimension = getPartValue(excelBook,parameterId[0][2],parameterId[1][2],dimensionCol);
+            configs.wa_h2_dimension =  getPartValue(excelBook,parameterId[0][3],parameterId[1][3],dimensionCol);
             break;
         }
         case CycloidGear:{
@@ -166,6 +173,7 @@ bool partData::initializeParts(QXlsx::Document& excelBook,partType type){
                 RoughCycloidGearList[i].cbh_1_d5 = getPartValue(excelBook,parameterId[0][2],parameterId[1][2],partBegin.col+i);
                 RoughCycloidGearList[i].cbh_2_d5 = getPartValue(excelBook,parameterId[0][3],parameterId[1][3],partBegin.col+i);
             }
+            configs.cg_Wk_dimension = getPartValue(excelBook,parameterId[0][1],parameterId[1][1],dimensionCol);
             break;
         }
         case CrankShaft:{
@@ -180,6 +188,7 @@ bool partData::initializeParts(QXlsx::Document& excelBook,partType type){
                 CrankShaftList[i].phase_angle = getPartValue(excelBook,parameterId[0][6],parameterId[1][6],partBegin.col+i);
                 CrankShaftList[i].ec_g = getPartValue(excelBook,parameterId[0][7],parameterId[1][7],partBegin.col+i);
             }
+            configs.ecc_h1_dimension = getPartValue(excelBook,parameterId[0][1],parameterId[1][1],dimensionCol);
             break;
         }
         default:
