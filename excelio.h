@@ -14,8 +14,15 @@
 #include "xlsxrichstring.h"
 #include "xlsxworkbook.h"
 
+#define EXCELIOBEGIN namespace excelio{
+#define EXCELIOEND }
+
+EXCELIOBEGIN
 using cmpFunction = bool(*)(const QString &a,const QString &b);
 using StringTable = QVector<QVector<QString>>;
+const int _average = 1;
+const int _min = 2;
+
 struct cell{
     cell(uint _x=0, uint _y=0):row(_x),col(_y){}
     uint row;
@@ -56,7 +63,7 @@ private:
     /*零件方法*/
     bool initializeParts(QXlsx::Document& excelBook,partType type);
     cell lookFor(const QXlsx::Document& excelBook, const QString &word,cmpFunction compare,const int& row, const int& col, const int& rowLength, const int& colLength);
-    double getPartValue(const QXlsx::Document& excelBook, const QString& name,const QString& roughRow,const int& col);
+    double getPartValue(const QXlsx::Document& excelBook, const QString& name,const QString& roughRow,const int& col,const int& way = _average);
     StringTable getParameterIdTable(const QXlsx::Document& excelBook);
     std::tuple<cell,int> findPartListLocation(const QXlsx::Document& excelBook,const QVector<QVector<QString>>& parameterId);
     /*配置文件方法*/
@@ -67,5 +74,5 @@ private:
     bool postProcessCycloidGear(const QVector<rcg>& RcgList, QVector<cg>& CgList);
 };
 
-
+EXCELIOEND
 #endif // EXCELIO_H

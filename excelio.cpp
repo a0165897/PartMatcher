@@ -1,6 +1,6 @@
 ﻿#include "excelio.h"
 
-
+EXCELIOBEGIN
 QString partData::whichSheetHaveThis(QXlsx::Document &excelBook, partType type){
     auto sheetList = excelBook.sheetNames();//what excel have.
     auto target = partMap[type];//what we want.
@@ -31,7 +31,7 @@ cell partData::lookFor(const QXlsx::Document & excelBook, const QString &word,cm
 }
 
 //从零件的行数栏(不同表示方法)->选取对应单元格数据->返回计算后的最终值
-double partData::getPartValue(const QXlsx::Document& excelBook, const QString& name,const QString& roughRow,const int& col){
+double partData::getPartValue(const QXlsx::Document& excelBook, const QString& name,const QString& roughRow,const int& col,const int& way){
     int getComma = roughRow.indexOf(',');
     int getSlash = roughRow.indexOf('-');
     //未检查是否有其他无法识别的字符。
@@ -56,14 +56,13 @@ double partData::getPartValue(const QXlsx::Document& excelBook, const QString& n
         int right = roughRow.rightRef(roughRow.size()-(getComma+1)).toInt();
         double d1 = excelBook.read(left,col).toDouble();
         double d2 = excelBook.read(right,col).toDouble();
-        const QString cbh1 = QStringLiteral("保持架轴承孔");
-        const QString cbh2 = QStringLiteral("直径");
-        if(name.indexOf(cbh1)!=-1&&name.indexOf(cbh2)!=-1){
+        if(way == _min){
             return fmin(d1,d2);
-        }else{
+        }else if(way == _average){
             return 0.5 * (d1+d2);
+        }else{
+            return -1;
         }
-
     }else{//不存在同时使用-和,的情况 
         return -1;
     }
@@ -170,8 +169,8 @@ bool partData::initializeParts(QXlsx::Document& excelBook,partType type){
             for(int i = 0;i<partNum;i++){
                 RoughCycloidGearList[i].ID = excelBook.read(partBegin.row,partBegin.col+i).toString();
                 RoughCycloidGearList[i].cg_Wk = getPartValue(excelBook,parameterId[0][1],parameterId[1][1],partBegin.col+i);
-                RoughCycloidGearList[i].cbh_1_d5 = getPartValue(excelBook,parameterId[0][2],parameterId[1][2],partBegin.col+i);
-                RoughCycloidGearList[i].cbh_2_d5 = getPartValue(excelBook,parameterId[0][3],parameterId[1][3],partBegin.col+i);
+                RoughCycloidGearList[i].cbh_1_d5 = getPartValue(excelBook,parameterId[0][2],parameterId[1][2],partBegin.col+i,_min);
+                RoughCycloidGearList[i].cbh_2_d5 = getPartValue(excelBook,parameterId[0][3],parameterId[1][3],partBegin.col+i,_min);
             }
             configs.cg_Wk_dimension = getPartValue(excelBook,parameterId[0][1],parameterId[1][1],dimensionCol);
             break;
@@ -430,3 +429,4 @@ bool partData::postProcessCycloidGear(const QVector<rcg>& RcgList, QVector<cg>& 
     qDebug()<<"Size of merged data is:"<<CgList.size()<< ".";
     return true;
 }
+EXCELIOEND

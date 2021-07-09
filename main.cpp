@@ -19,8 +19,7 @@ int main(int argc, char *argv[])
     const QString fileName = QStringLiteral("20E间隙计算测量数据20210707(1).xlsx");
 
     QXlsx::Document &excelBook = *new QXlsx::Document(fileName);
-    partData data(excelBook);
-
+    excelio::partData data(excelBook);
     qDebug()<<"********file: "<<fileName<<"Loaded in"<<timer.restart()<<"ms.********";
 
     /*********输出************/
