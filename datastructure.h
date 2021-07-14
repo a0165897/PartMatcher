@@ -22,7 +22,11 @@ const QMap<partType,QString> partMap = {
 };
 
 typedef struct RangePair{
-    RangePair(double _min=0.0, double _max=0.0):min(_min),max(_max){}
+    RangePair(){}
+    RangePair(double _min, double _max):min(_min),max(_max){}
+    QVariant toVariant(){
+        return QString::number(this->min,'f',4)+" ~ "+QString::number(this->max,'f',4);
+    }
     double min;
     double max;
 }range;
@@ -35,7 +39,8 @@ typedef struct PinWheelHousing  //针齿壳
     double pwc_d1;   //针齿圆直径
     double pwcc_D2;  //针齿中心圆直径
     double wa_h2;    //齿槽(alveolar)高
-}pwh;
+}pwc;
+using pwh = pwc;
 
 typedef struct NeedlePin  //针销 where is this??
 {
@@ -112,6 +117,10 @@ typedef struct CageBearing  //保持架轴承
     range cb_d_range;
 }cb;
 
+typedef struct Shim{//垫片
+    double shim;
+}sm;
+
 /*******编程规则***********/
 typedef struct configuration //公式中范围的配置文件
 {
@@ -153,7 +162,35 @@ typedef struct configuration //公式中范围的配置文件
 
 }config;
 
-
+/*输出项*/
+typedef struct result //结果
+{
+    QString pwc_ID; //针齿壳ID
+    QString cg_A_ID; //摆线轮A ID
+    QString cg_B_ID; //摆线轮B ID
+    QString cs_1_ID; //曲轴孔1ID
+    QString cs_2_ID; //曲轴孔2ID
+    QString pc_ID;   //行星架ID
+    range tb_A1_od; //圆锥轴承外径
+    range tb_A1_id; //圆锥轴承内径
+    range tb_A1_h;  //高度
+    range tb_A2_od; //圆锥轴承外径
+    range tb_A2_id; //圆锥轴承内径
+    range tb_A2_h;  //高度
+    range tb_B1_od; //圆锥轴承外径
+    range tb_B1_id; //圆锥轴承内径
+    range tb_B1_h;  //高度
+    range tb_B2_od; //圆锥轴承外径
+    range tb_B2_id; //圆锥轴承内径
+    range tb_B2_h;  //高度
+    range cb_A1_d;  //保持架轴承针销直径
+    range cb_A2_d;  //保持架轴承针销直径
+    range cb_B1_d;  //保持架轴承针销直径
+    range cb_B2_d;  //保持架轴承针销直径
+    range acbb_h; //角接触球轴承高度
+    range shim_1;   //垫片1
+    range shim_2;   //垫片2
+}re;
 
 
 #endif // DATASTRUCTURE_H

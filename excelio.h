@@ -40,7 +40,7 @@ public:
         this->initializeConfigs(excelBook,Config);
         this->postProcessCycloidGear(RoughCycloidGearList,CycloidGearList);
     }
-
+    bool saveTo(QVector<re>& from,QXlsx::Document & to);
     /*数据*/
     QVector<pwh> PinWheelHousingList;//针齿壳
     QVector<pc> PlanetCarrierList;//行星架
@@ -48,9 +48,10 @@ public:
     QVector<cs> CrankShaftList;//曲轴
     /*标准件*/
 //  np      NeedlePin;//针鞘
-    tb      TaperedBearing;//圆锥轴承
-    acbb    AngularContactBallBearing;//角接触球轴承
-    cb      CageBearing;//保持架轴承
+    tb      TaperedBearingConfig;//圆锥轴承
+    acbb    AngularContactBallBearingConfig;//角接触球轴承
+    cb      CageBearingConfig;//保持架轴承
+    sm      ShimConfig;
     /*配置*/
     config configs;
 

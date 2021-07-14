@@ -217,6 +217,7 @@ range partData::getConfigRange(QXlsx::Document &excelBook,const int& row, const 
             i='.';
         }
     }
+    roughRange.remove(QRegExp("\\s"));
     int getWave = roughRange.indexOf('~');
     int getPlusMinus = roughRange.indexOf(QStringLiteral("±"));
     if(getPlusMinus!=-1){
@@ -225,7 +226,7 @@ range partData::getConfigRange(QXlsx::Document &excelBook,const int& row, const 
     }else if(getWave!= -1){
         double left = roughRange.leftRef(getWave).toDouble();
         double right = roughRange.rightRef(roughRange.size()-(getWave+1)).toDouble();
-        return range(left,right);
+        return range(fmin(left,right),fmax(left,right));
     }else{
         qDebug()<<"Warning : Reading a blank config range or unknown cell in ["<<row<<","<<col<<"], which will be ignored.";
         return range(10001,10001);
@@ -251,6 +252,7 @@ bool partData::initializeConfigs(QXlsx::Document &excelBook,partType type){
                                   QStringLiteral("圆锥轴承高度"),
                                   QStringLiteral("保持架轴承针销直径"),
                                   QStringLiteral("角接触球轴承高度"),
+                                  QStringLiteral("圆锥轴承垫片厚度")
 
             };
             QVector<cell> cellList(titles.size());
@@ -261,7 +263,8 @@ bool partData::initializeConfigs(QXlsx::Document &excelBook,partType type){
                     ... cola colb ...
             rows[0]
             rows[1]*/
-            int cola = cellList[0].col,colb = cellList[1].col;
+            int cola = cellList[0].col;
+            int colb = cellList[1].col;
             QVector<int> rows(cellList.size()-2);
             for(int i=2;i<cellList.size();i++){
                 rows[i-2] = cellList[i].row;
@@ -269,27 +272,29 @@ bool partData::initializeConfigs(QXlsx::Document &excelBook,partType type){
             //圆锥轴承外径&设计尺寸
             for(int i=0;i<3;i++){
                 range ret = getConfigRange(excelBook,rows[0]+i,cola);
-                if(ret.min<10000.0) TaperedBearing.tb_od_range.push_back(ret);
+                if(ret.min<10000.0) TaperedBearingConfig.tb_od_range.push_back(ret);
             }
-            TaperedBearing.tb_od = excelBook.read(rows[0],colb).toDouble();
+            TaperedBearingConfig.tb_od = excelBook.read(rows[0],colb).toDouble();
             //圆锥轴承内径&设计尺寸
             for(int i=0;i<3;i++){
                 range ret = getConfigRange(excelBook,rows[1]+i,cola);
-                if(ret.min<10000.0) TaperedBearing.tb_id_range.push_back(ret);
+                if(ret.min<10000.0) TaperedBearingConfig.tb_id_range.push_back(ret);
             }
-            TaperedBearing.tb_id = excelBook.read(rows[1],colb).toDouble();
+            TaperedBearingConfig.tb_id = excelBook.read(rows[1],colb).toDouble();
             //圆锥轴承高度&设计尺寸
             for(int i=0;i<3;i++){
                 range ret = getConfigRange(excelBook,rows[2]+i,cola);
-                if(ret.min<10000.0) TaperedBearing.tb_h_range.push_back(ret);
+                if(ret.min<10000.0) TaperedBearingConfig.tb_h_range.push_back(ret);
             }
-            TaperedBearing.tb_h = excelBook.read(rows[2],colb).toDouble();
+            TaperedBearingConfig.tb_h = excelBook.read(rows[2],colb).toDouble();
             //保持架轴承针销直径&设计尺寸
-            CageBearing.cb_d_range = getConfigRange(excelBook,rows[3],cola);
-            CageBearing.cb_d = excelBook.read(rows[3],colb).toDouble();
+            CageBearingConfig.cb_d_range = getConfigRange(excelBook,rows[3],cola);
+            CageBearingConfig.cb_d = excelBook.read(rows[3],colb).toDouble();
             //角接触球轴承高度&设计尺寸
-            AngularContactBallBearing.acbb_h_range = getConfigRange(excelBook,rows[4],cola);
-            AngularContactBallBearing.acbb_h = excelBook.read(rows[4],colb).toDouble();
+            AngularContactBallBearingConfig.acbb_h_range = getConfigRange(excelBook,rows[4],cola);
+            AngularContactBallBearingConfig.acbb_h = excelBook.read(rows[4],colb).toDouble();
+            //垫片
+            ShimConfig.shim = excelBook.read(rows[5],cola).toDouble();
             break;
     }
         case Config:{
@@ -427,6 +432,81 @@ bool partData::postProcessCycloidGear(const QVector<rcg>& RcgList, QVector<cg>& 
     }
     qDebug()<<"Size of rough data is:"<<RcgList.size()<< ".";
     qDebug()<<"Size of merged data is:"<<CgList.size()<< ".";
+    return true;
+}
+
+bool partData::saveTo(QVector<re>& from,QXlsx::Document & to){
+
+    QMap<QString,cell> title;
+    title.insert(QStringLiteral("序号"),cell(5,4));
+    title.insert(QStringLiteral("针齿壳"),cell(6,4));
+    title.insert(QStringLiteral("摆线轮A"),cell(7,4));
+    title.insert(QStringLiteral("摆线轮B"),cell(8,4));
+    title.insert(QStringLiteral("曲轴A"),cell(9,4));
+    title.insert(QStringLiteral("曲轴B"),cell(10,4));
+    title.insert(QStringLiteral("行星架"),cell(11,4));
+    title.insert(QStringLiteral("圆锥轴承"),cell(12,4));
+    //序号
+    cell head = title[QStringLiteral("序号")];
+    to.setColumnWidth(head.col,head.col + from.size(),25);
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,QStringLiteral("组")+QString::number(i+1));
+    }
+    //零件
+    head = title[QStringLiteral("针齿壳")];
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,from[i].pwc_ID);
+
+    }
+    head = title[QStringLiteral("摆线轮A")];
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,from[i].cg_A_ID);
+    }
+    head = title[QStringLiteral("摆线轮B")];
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,from[i].cg_B_ID);
+    }
+    head = title[QStringLiteral("曲轴A")];
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,from[i].cs_1_ID);
+    }
+    head = title[QStringLiteral("曲轴B")];
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,from[i].cs_2_ID);
+    }
+    head = title[QStringLiteral("行星架")];
+    for(int i=0 ;i< from.size();i++){
+        to.write(head.row,head.col+i,from[i].pc_ID);
+    }
+    //标准件
+    head = title[QStringLiteral("圆锥轴承")];
+    int bias=0;
+    to.write(head.row+bias++,head.col,from[0].tb_A1_od.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_A1_id.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_A1_h.toVariant());
+
+    to.write(head.row+bias++,head.col,from[0].tb_A2_od.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_A2_id.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_A2_h.toVariant());
+
+    to.write(head.row+bias++,head.col,from[0].tb_B1_od.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_B1_id.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_B1_h.toVariant());
+
+    to.write(head.row+bias++,head.col,from[0].tb_B2_od.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_B2_id.toVariant());
+    to.write(head.row+bias++,head.col,from[0].tb_B2_h.toVariant());
+
+    to.write(head.row+bias++,head.col,from[0].cb_A1_d.toVariant());
+    to.write(head.row+bias++,head.col,from[0].cb_A2_d.toVariant());
+    to.write(head.row+bias++,head.col,from[0].cb_B1_d.toVariant());
+    to.write(head.row+bias++,head.col,from[0].cb_B2_d.toVariant());
+
+    to.write(head.row+bias++,head.col,from[0].acbb_h.toVariant());
+
+    to.write(head.row+bias++,head.col,from[0].shim_1.toVariant());
+    to.write(head.row+bias++,head.col,from[0].shim_2.toVariant());
+    to.save();
     return true;
 }
 EXCELIOEND
