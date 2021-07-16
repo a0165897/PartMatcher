@@ -160,6 +160,9 @@ typedef struct configuration //公式中范围的配置文件
     double ecc_h1_dimension;  //两个偏心圆柱高度h1尺寸CrankShaft
     double cg_Wk_dimension;   //摆线轮公法线尺寸CycloidGear
 
+    int tb_id_flag; //圆锥轴承内径参数
+    int tb_od_flag; //圆锥轴承外径参数
+    int tb_h_flag;  //圆锥轴承高度参数
 }config;
 
 /*输出项*/

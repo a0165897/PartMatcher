@@ -299,20 +299,20 @@ bool partData::initializeConfigs(QXlsx::Document &excelBook,partType type){
     }
         case Config:{
             QStringList titlesCol = {
-                                  QStringLiteral("零件的尺寸公差或范围"),
-                                  QStringLiteral("公式参数1"),
-                                  QStringLiteral("公式参数2"),
-                                  QStringLiteral("公式参数3")
+                                  QStringLiteral("零件的尺寸公差或范围"),//cols[0]
+                                  QStringLiteral("公式参数1"),//cols[1]
+                                  QStringLiteral("公式参数2"),//cols[2]
+                                  QStringLiteral("公式参数3")//cols[3]
             };
             QStringList titlesRow = {
-                                  QStringLiteral("针齿壳与针销"),
-                                  QStringLiteral("针齿壳与摆线轮"),
-                                  QStringLiteral("摆线轮轴承孔、曲轴偏心圆与保持架轴承针销间隙"),
-                                  QStringLiteral("摆线轮、保持架轴承与曲轴的相位角匹配"),
-                                  QStringLiteral("曲轴与锥形轴承"),
-                                  QStringLiteral("行星架与锥形轴承"),
-                                  QStringLiteral("行星架、角接触球轴承、针齿壳齿槽高度配合与角接触球轴承预紧量t2计算公式"),
-                                  QStringLiteral("曲轴两个偏心圆柱与行星架卡簧槽高度配合，曲轴预紧量t1计算公式")
+                                  QStringLiteral("针齿壳与针销"),//rows[0]
+                                  QStringLiteral("针齿壳与摆线轮"),//1
+                                  QStringLiteral("摆线轮轴承孔、曲轴偏心圆与保持架轴承针销间隙"),//2
+                                  QStringLiteral("摆线轮、保持架轴承与曲轴的相位角匹配"),//3
+                                  QStringLiteral("曲轴与锥形轴承"),//4
+                                  QStringLiteral("行星架与锥形轴承"),//5
+                                  QStringLiteral("行星架、角接触球轴承、针齿壳齿槽高度配合与角接触球轴承预紧量t2计算公式"),//6
+                                  QStringLiteral("曲轴两个偏心圆柱与行星架卡簧槽高度配合，曲轴预紧量t1计算公式")//rows[7]
                                  };
 
             /*整理序号
@@ -368,8 +368,12 @@ bool partData::initializeConfigs(QXlsx::Document &excelBook,partType type){
             configs.t6 = getConfigParameterString(excelBook,rows[3],cols[3]).toDouble();
             //圆锥轴承内径d4与曲轴中心圆柱直径D4之差的范围
             configs.t4_range = getConfigRange(excelBook,rows[4],cols[0]);
+            //圆锥轴承内径参数
+            configs.tb_id_flag = getConfigParameterString(excelBook,rows[4],cols[1]).toInt();
             //圆锥轴承孔直径d3与圆锥轴承外径D3之差的范围
             configs.t3_range = getConfigRange(excelBook,rows[5],cols[0]);
+            //圆锥轴承外径参数
+            configs.tb_od_flag = getConfigParameterString(excelBook,rows[5],cols[1]).toInt();
             //齿槽高h2公差范围
             for(int i=0;i<2;i++){
                 range ret = getConfigRange(excelBook,rows[6]+1+i,cols[0]);
@@ -382,18 +386,20 @@ bool partData::initializeConfigs(QXlsx::Document &excelBook,partType type){
             }
             //针齿壳齿槽高与行星架角接触球轴承高度配合
             configs.t2_range = getConfigRange(excelBook,rows[6]+3,cols[0]);
+            //圆锥轴承高度参数
+            configs.tb_h_flag = getConfigParameterString(excelBook,rows[7],cols[1]).toInt();
             //行星架卡簧槽高H1公差范围
             for(int i=0;i<2;i++){
-                range ret = getConfigRange(excelBook,rows[6]+5+i,cols[0]);
+                range ret = getConfigRange(excelBook,rows[7]+1+i,cols[0]);
                 if(ret.min<10000.0) configs.ca_H1_range.push_back(ret);
             }
             //两个偏心圆柱高度h1公差范围
             for(int i=0;i<2;i++){
-                range ret = getConfigRange(excelBook,rows[6]+5+i,cols[0]+1);
+                range ret = getConfigRange(excelBook,rows[7]+1+i,cols[0]+1);
                 if(ret.min<10000.0) configs.ecc_h1_range.push_back(ret);
             }
             //行星架卡簧槽高与曲轴两个偏心圆柱高度配合
-            configs.t1_range = getConfigRange(excelBook,rows[6]+7,cols[0]);
+            configs.t1_range = getConfigRange(excelBook,rows[7]+3,cols[0]);
             break;
         }
         default:
