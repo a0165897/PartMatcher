@@ -58,7 +58,8 @@ typedef struct RoughCycloidGear  //摆线轮
 
 typedef struct CycloidGear  //摆线轮  摆线轮会有AB两个作为一对，A为上轮，B为下轮
 {
- QString ID;
+ QString ID;//A
+ QString ID_vice;//B
  double cg_Wk;        //摆线轮公法线
  double cbh_A1_d5;    //保持架轴承孔cage bearing hole 直径d
  double cbh_A2_d5;    //保持架轴承孔cage bearing hole 直径d
@@ -166,8 +167,41 @@ typedef struct configuration //公式中范围的配置文件
 }config;
 
 /*输出项*/
+
+enum idType{pwc_ID,pc_ID,cg_A_ID,cg_B_ID,cs_1_ID,cs_2_ID};
+const QMap<idType,partType> idToPart = {
+    {pwc_ID,PinWheelHousing},
+    {pc_ID,PlanetCarrier},
+    {cg_A_ID,CycloidGear},
+    {cg_B_ID,CycloidGear},
+    {cs_1_ID,CrankShaft},
+    {cs_2_ID,CrankShaft}
+};
+
 typedef struct result //结果
 {
+    QString getIdOf(idType type){
+        switch (type) {
+        case idType::pwc_ID:
+            return pwc_ID;
+            break;
+        case idType::pc_ID:
+            return pc_ID;
+            break;
+        case idType::cg_A_ID:
+            return cg_A_ID;
+            break;
+        case idType::cg_B_ID:
+            return cg_B_ID;
+            break;
+        case idType::cs_1_ID:
+            return cs_1_ID;
+            break;
+        case idType::cs_2_ID:
+            return cs_2_ID;
+            break;
+        }
+    }
     QString pwc_ID; //针齿壳ID
     QString cg_A_ID; //摆线轮A ID
     QString cg_B_ID; //摆线轮B ID

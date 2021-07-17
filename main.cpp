@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QAxObject>
+#include <QDir>
 //stl
 #include <tuple>
 //excelio
@@ -15,10 +17,13 @@ int main(int argc, char *argv[])
 
     QElapsedTimer timer;
     timer.start();
+
+    //原始文件
+    QString fileIn = QStringLiteral("D:/build-partMatcher-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/20E间隙计算测量数据20210707(1).xlsx");
+    //匹配结果
+    QString fileOut = QStringLiteral("D:/build-partMatcher-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/零件选配结果210629(1).xlsx");
     //打开数据
-    const QString fileIn = QStringLiteral("20E间隙计算测量数据20210707(1).xlsx");
-    QXlsx::Document excelBook =  QXlsx::Document(fileIn);
-    excelio::partData data(excelBook);
+    excelio::partData data(fileIn);
     qDebug()<<"********file: "<<fileIn<<"Loaded in"<<timer.restart()<<"ms.********";
 
     //进行计算
@@ -54,13 +59,12 @@ int main(int argc, char *argv[])
     }
 
     //保存结果
-    const QString fileOut = QStringLiteral("零件选配结果210629(1).xlsx");
-    QXlsx::Document result = QXlsx::Document(fileOut);
     qDebug()<<"Saving to "<< fileOut<<".";
-    data.saveTo(ret,result);
-    qDebug()<<"******** Saved in"<<timer.restart()<<" ms.********";
-
-
+    data.saveTo(ret,fileOut);
+    qDebug()<<"********Result Saved in"<<timer.restart()<<" ms.********";
+    data.cleanSrc(ret);
+    qDebug()<<"******** Cleaned in"<<timer.restart()<<" ms.********";
+    data.release();
     return a.exec();
 }
 

@@ -1,4 +1,4 @@
-// xlsxdocument.cpp
+﻿// xlsxdocument.cpp
 
 #include <QtGlobal>
 #include <QFile>
@@ -350,106 +350,106 @@ bool DocumentPrivate::savePackage(QIODevice *device) const
             zipWriter.addFile(QStringLiteral("xl/worksheets/_rels/sheet%1.xml.rels").arg(i+1), rel->saveToXmlData());
 	}
 
-	//save chartsheet xml files
-	QList<QSharedPointer<AbstractSheet> > chartsheets = workbook->getSheetsByTypes(AbstractSheet::ST_ChartSheet);
-	if (!chartsheets.isEmpty())
+    //save chartsheet xml files
+    QList<QSharedPointer<AbstractSheet> > chartsheets = workbook->getSheetsByTypes(AbstractSheet::ST_ChartSheet);
+    if (!chartsheets.isEmpty())
         docPropsApp.addHeadingPair(QStringLiteral("Chartsheets"), chartsheets.size());
     for (int i=0; i<chartsheets.size(); ++i)
     {
-		QSharedPointer<AbstractSheet> sheet = chartsheets[i];
+        QSharedPointer<AbstractSheet> sheet = chartsheets[i];
         contentTypes->addWorksheetName(QStringLiteral("sheet%1").arg(i+1));
-		docPropsApp.addPartTitle(sheet->sheetName());
+        docPropsApp.addPartTitle(sheet->sheetName());
 
         zipWriter.addFile(QStringLiteral("xl/chartsheets/sheet%1.xml").arg(i+1), sheet->saveToXmlData());
-		Relationships *rel = sheet->relationships();
-		if (!rel->isEmpty())
+        Relationships *rel = sheet->relationships();
+        if (!rel->isEmpty())
             zipWriter.addFile(QStringLiteral("xl/chartsheets/_rels/sheet%1.xml.rels").arg(i+1), rel->saveToXmlData());
-	}
+    }
 
-	// save external links xml files
+    // save external links xml files
     for (int i=0; i<workbook->d_func()->externalLinks.count(); ++i)
     {
-		SimpleOOXmlFile *link = workbook->d_func()->externalLinks[i].data();
+        SimpleOOXmlFile *link = workbook->d_func()->externalLinks[i].data();
         contentTypes->addExternalLinkName(QStringLiteral("externalLink%1").arg(i+1));
 
         zipWriter.addFile(QStringLiteral("xl/externalLinks/externalLink%1.xml").arg(i+1), link->saveToXmlData());
-		Relationships *rel = link->relationships();
-		if (!rel->isEmpty())
+        Relationships *rel = link->relationships();
+        if (!rel->isEmpty())
             zipWriter.addFile(QStringLiteral("xl/externalLinks/_rels/externalLink%1.xml.rels").arg(i+1), rel->saveToXmlData());
-	}
+    }
 
-	// save workbook xml file
-	contentTypes->addWorkbook();
-	zipWriter.addFile(QStringLiteral("xl/workbook.xml"), workbook->saveToXmlData());
-	zipWriter.addFile(QStringLiteral("xl/_rels/workbook.xml.rels"), workbook->relationships()->saveToXmlData());
+    // save workbook xml file
+    contentTypes->addWorkbook();
+    zipWriter.addFile(QStringLiteral("xl/workbook.xml"), workbook->saveToXmlData());
+    zipWriter.addFile(QStringLiteral("xl/_rels/workbook.xml.rels"), workbook->relationships()->saveToXmlData());
 
-	// save drawing xml files
+    // save drawing xml files
     for (int i=0; i<workbook->drawings().size(); ++i)
     {
         contentTypes->addDrawingName(QStringLiteral("drawing%1").arg(i+1));
 
-		Drawing *drawing = workbook->drawings()[i];
+        Drawing *drawing = workbook->drawings()[i];
         zipWriter.addFile(QStringLiteral("xl/drawings/drawing%1.xml").arg(i+1), drawing->saveToXmlData());
-		if (!drawing->relationships()->isEmpty())
+        if (!drawing->relationships()->isEmpty())
             zipWriter.addFile(QStringLiteral("xl/drawings/_rels/drawing%1.xml.rels").arg(i+1), drawing->relationships()->saveToXmlData());
-	}
+    }
 
-	// save docProps app/core xml file
+    // save docProps app/core xml file
     const auto docPropNames = q->documentPropertyNames();
     for (const QString &name : docPropNames) {
-		docPropsApp.setProperty(name, q->documentProperty(name));
-		docPropsCore.setProperty(name, q->documentProperty(name));
-	}
-	contentTypes->addDocPropApp();
-	contentTypes->addDocPropCore();
-	zipWriter.addFile(QStringLiteral("docProps/app.xml"), docPropsApp.saveToXmlData());
-	zipWriter.addFile(QStringLiteral("docProps/core.xml"), docPropsCore.saveToXmlData());
+        docPropsApp.setProperty(name, q->documentProperty(name));
+        docPropsCore.setProperty(name, q->documentProperty(name));
+    }
+    contentTypes->addDocPropApp();
+    contentTypes->addDocPropCore();
+    zipWriter.addFile(QStringLiteral("docProps/app.xml"), docPropsApp.saveToXmlData());
+    zipWriter.addFile(QStringLiteral("docProps/core.xml"), docPropsCore.saveToXmlData());
 
-	// save sharedStrings xml file
-	if (!workbook->sharedStrings()->isEmpty()) {
-		contentTypes->addSharedString();
-		zipWriter.addFile(QStringLiteral("xl/sharedStrings.xml"), workbook->sharedStrings()->saveToXmlData());
-	}
+    // save sharedStrings xml file
+    if (!workbook->sharedStrings()->isEmpty()) {
+        contentTypes->addSharedString();
+        zipWriter.addFile(QStringLiteral("xl/sharedStrings.xml"), workbook->sharedStrings()->saveToXmlData());
+    }
 
     // save calc chain [dev16]
     contentTypes->addCalcChain();
     zipWriter.addFile(QStringLiteral("xl/calcChain.xml"), workbook->styles()->saveToXmlData());
 
-	// save styles xml file
-	contentTypes->addStyles();
-	zipWriter.addFile(QStringLiteral("xl/styles.xml"), workbook->styles()->saveToXmlData());
+    // save styles xml file
+    contentTypes->addStyles();
+    zipWriter.addFile(QStringLiteral("xl/styles.xml"), workbook->styles()->saveToXmlData());
 
-	// save theme xml file
-	contentTypes->addTheme();
-	zipWriter.addFile(QStringLiteral("xl/theme/theme1.xml"), workbook->theme()->saveToXmlData());
+    // save theme xml file
+    contentTypes->addTheme();
+    zipWriter.addFile(QStringLiteral("xl/theme/theme1.xml"), workbook->theme()->saveToXmlData());
 
-	// save chart xml files
+    // save chart xml files
     for (int i=0; i<workbook->chartFiles().size(); ++i)
     {
         contentTypes->addChartName(QStringLiteral("chart%1").arg(i+1));
-		QSharedPointer<Chart> cf = workbook->chartFiles()[i];
+        QSharedPointer<Chart> cf = workbook->chartFiles()[i];
         zipWriter.addFile(QStringLiteral("xl/charts/chart%1.xml").arg(i+1), cf->saveToXmlData());
-	}
+    }
 
-	// save image files
+    // save image files
     for (int i=0; i<workbook->mediaFiles().size(); ++i)
     {
-		QSharedPointer<MediaFile> mf = workbook->mediaFiles()[i];
-		if (!mf->mimeType().isEmpty())
-			contentTypes->addDefault(mf->suffix(), mf->mimeType());
+        QSharedPointer<MediaFile> mf = workbook->mediaFiles()[i];
+        if (!mf->mimeType().isEmpty())
+            contentTypes->addDefault(mf->suffix(), mf->mimeType());
 
         zipWriter.addFile(QStringLiteral("xl/media/image%1.%2").arg(i+1).arg(mf->suffix()), mf->contents());
-	}
+    }
 
-	// save root .rels xml file
-	Relationships rootrels;
-	rootrels.addDocumentRelationship(QStringLiteral("/officeDocument"), QStringLiteral("xl/workbook.xml"));
-	rootrels.addPackageRelationship(QStringLiteral("/metadata/core-properties"), QStringLiteral("docProps/core.xml"));
-	rootrels.addDocumentRelationship(QStringLiteral("/extended-properties"), QStringLiteral("docProps/app.xml"));
-	zipWriter.addFile(QStringLiteral("_rels/.rels"), rootrels.saveToXmlData());
+    // save root .rels xml file
+    Relationships rootrels;
+    rootrels.addDocumentRelationship(QStringLiteral("/officeDocument"), QStringLiteral("xl/workbook.xml"));
+    rootrels.addPackageRelationship(QStringLiteral("/metadata/core-properties"), QStringLiteral("docProps/core.xml"));
+    rootrels.addDocumentRelationship(QStringLiteral("/extended-properties"), QStringLiteral("docProps/app.xml"));
+    zipWriter.addFile(QStringLiteral("_rels/.rels"), rootrels.saveToXmlData());
 
-	// save content types xml file
-	zipWriter.addFile(QStringLiteral("[Content_Types].xml"), contentTypes->saveToXmlData());
+    // save content types xml file
+    zipWriter.addFile(QStringLiteral("[Content_Types].xml"), contentTypes->saveToXmlData());
 
 	zipWriter.close();
 	return true;

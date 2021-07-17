@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QApplication>
 #include <QTextCodec>
+#include <QAxObject>
+#include <QDir>
 //QXlsx
 #include "xlsxdocument.h"
 #include "xlsxchartsheet.h"
@@ -31,21 +33,40 @@ struct cell{
 
 class partData{
 public:
-    explicit partData(QXlsx::Document & excelBook){
-        this->initializeParts(excelBook,PinWheelHousing);
-        this->initializeParts(excelBook,PlanetCarrier);
-        this->initializeParts(excelBook,CycloidGear);
-        this->initializeParts(excelBook,CrankShaft);
-        this->initializeConfigs(excelBook,Bearing);
-        this->initializeConfigs(excelBook,Config);
+    explicit partData(QString source){
+        sourceExcelName = source;
+        this->excelBook = new QXlsx::Document(source);
+        this->initializeComInterface();
+
+        this->initializeParts(PinWheelHousing);
+        this->initializeParts(PlanetCarrier);
+        this->initializeParts(CycloidGear);
+        this->initializeParts(CrankShaft);
+        this->initializeConfigs(Bearing);
+        this->initializeConfigs(Config);
         this->postProcessCycloidGear(RoughCycloidGearList,CycloidGearList);
+
     }
-    bool saveTo(QVector<re>& from,QXlsx::Document & to);
+    ~partData(){
+            this->release();
+    }
+    void release(){
+        if(COMExcel!=nullptr){
+            COMExcel->dynamicCall("Quit()");
+            delete COMExcel;
+            COMExcel = nullptr;
+        }
+        delete excelBook;
+        excelBook = nullptr;
+    }
+    bool saveTo(QVector<re>& from,QString& to);
+    bool cleanSrc(QVector<re>& from);
     /*数据*/
     QVector<pwh> PinWheelHousingList;//针齿壳
     QVector<pc> PlanetCarrierList;//行星架
     QVector<cg> CycloidGearList;//摆线轮
     QVector<cs> CrankShaftList;//曲轴
+
     /*标准件*/
 //  np      NeedlePin;//针鞘
     tb      TaperedBearingConfig;//圆锥轴承
@@ -56,23 +77,42 @@ public:
     config configs;
 
 private:
-    QVector<rcg> RoughCycloidGearList; //摆线轮逐列读取的原始数据
+    QString sourceExcelName;
 
+    QXlsx::Document* excelBook;//qxlsx接口
+
+    QAxObject* COMExcel,* COMInterface; //COM接口（需要Excel环境）
+
+    //摆线轮逐列读取的原始数据
+    QVector<rcg> RoughCycloidGearList;
+
+    /*各零件ID->行列号*/
+    QMap<QString,cell> PinWheelHousingDic;
+    QMap<QString,cell> PlanetCarrierDic;
+    QMap<QString,cell> RoughCycloidGearDic;
+    QMap<QString,cell> CrankShaftDic;
+
+    /*初始化COM接口*/
+    bool initializeComInterface();
     /*type映射向一个字串，在sheets的标题中寻找并返回带这个字串的标题*/
-    QString whichSheetHaveThis(QXlsx::Document& excelBook,partType type);
+    QString whichSheetHaveThis(partType type);
 
     /*零件方法*/
-    bool initializeParts(QXlsx::Document& excelBook,partType type);
-    cell lookFor(const QXlsx::Document& excelBook, const QString &word,cmpFunction compare,const int& row, const int& col, const int& rowLength, const int& colLength);
-    double getPartValue(const QXlsx::Document& excelBook, const QString& name,const QString& roughRow,const int& col,const int& way = _average);
-    StringTable getParameterIdTable(const QXlsx::Document& excelBook);
-    std::tuple<cell,int> findPartListLocation(const QXlsx::Document& excelBook,const QVector<QVector<QString>>& parameterId);
+    bool initializeParts(partType type);
+    cell lookFor(const QString &word,cmpFunction compare,const int& row, const int& col, const int& rowLength, const int& colLength);
+    double getPartValue(const QString& name,const QString& roughRow,const int& col,const int& way = _average);
+    StringTable getParameterIdTable();
+    std::tuple<cell,int> findPartListLocation(const QVector<QVector<QString>>& parameterId);
     /*配置文件方法*/
-    bool initializeConfigs(QXlsx::Document& excelBook,partType type);
-    range getConfigRange(QXlsx::Document &excelBook,const int& row, const int& col);
-    QString getConfigParameterString(QXlsx::Document &excelBook,const int& row, const int& col);
+    bool initializeConfigs(partType type);
+    range getConfigRange(const int& row, const int& col);
+    QString getConfigParameterString(const int& row, const int& col);
     /*摆线轮后处理*/
     bool postProcessCycloidGear(const QVector<rcg>& RcgList, QVector<cg>& CgList);
+    /*原始数据清理*/
+    QMap<QString,cell>& idToCell(idType type);
+    void colNumToColName(int data, QString &res);
+    bool cleanSheet(idType type, QVector<re>& from);
 };
 
 EXCELIOEND
