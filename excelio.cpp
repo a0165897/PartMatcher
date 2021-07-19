@@ -501,31 +501,31 @@ bool partData::saveTo(QVector<re>& from,QString& _to){
     head = title[QStringLiteral("圆锥轴承")];
     for(int i=0;i<from.size();i++){
         int bias=0;
-        to.write(head.row+bias++,head.col+i,from[0].tb_A1_od.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_A1_id.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_A1_h.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_A1_od.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_A1_id.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_A1_h.toVariant());
 
-        to.write(head.row+bias++,head.col+i,from[0].tb_A2_od.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_A2_id.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_A2_h.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_A2_od.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_A2_id.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_A2_h.toVariant());
 
-        to.write(head.row+bias++,head.col+i,from[0].tb_B1_od.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_B1_id.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_B1_h.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_B1_od.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_B1_id.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_B1_h.toVariant());
 
-        to.write(head.row+bias++,head.col+i,from[0].tb_B2_od.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_B2_id.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].tb_B2_h.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_B2_od.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_B2_id.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].tb_B2_h.toVariant());
 
-        to.write(head.row+bias++,head.col+i,from[0].cb_A1_d.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].cb_A2_d.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].cb_B1_d.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].cb_B2_d.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].cb_A1_d.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].cb_A2_d.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].cb_B1_d.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].cb_B2_d.toVariant());
 
-        to.write(head.row+bias++,head.col+i,from[0].acbb_h.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].acbb_h.toVariant());
 
-        to.write(head.row+bias++,head.col+i,from[0].shim_1.toVariant());
-        to.write(head.row+bias++,head.col+i,from[0].shim_2.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].shim_1.toVariant());
+        to.write(head.row+bias++,head.col+i,from[i].shim_2.toVariant());
     }
     to.save();
     return true;
