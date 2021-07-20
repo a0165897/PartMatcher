@@ -202,7 +202,7 @@ typedef struct result //结果
             break;
         }
     }
-    QString pwc_ID; //针齿壳ID
+    QString pwc_ID;  //针齿壳ID
     QString cg_A_ID; //摆线轮A ID
     QString cg_B_ID; //摆线轮B ID
     QString cs_1_ID; //曲轴孔1ID
@@ -224,9 +224,10 @@ typedef struct result //结果
     range cb_A2_d;  //保持架轴承针销直径
     range cb_B1_d;  //保持架轴承针销直径
     range cb_B2_d;  //保持架轴承针销直径
-    range acbb_h; //角接触球轴承高度
+    range acbb_h;   //角接触球轴承高度
     range shim_1;   //垫片1
     range shim_2;   //垫片2
+    range np;       //帧鞘
 }re;
 
 

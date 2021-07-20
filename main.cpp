@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     //原始文件
     QString fileIn = QStringLiteral("D:/build-partMatcher-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/20E间隙计算测量数据20210707(1).xlsx");
     //匹配结果
-    QString fileOut = QStringLiteral("D:/build-partMatcher-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/零件选配结果210629(1).xlsx");
+    QString fileOut = QStringLiteral("D:/build-partMatcher-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/零件选配结果210720.xlsx");
     //打开数据
     excelio::partData data(fileIn);
     qDebug()<<"********file: "<<fileIn<<"Loaded in"<<timer.restart()<<"ms.********";
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     //进行计算
     QVector<re> ret;
     re sample;
-    sample.pwc_ID = data.PinWheelHousingList[0].ID;
+    sample.pwc_ID = data.PinWheelHousingList[22].ID;
     sample.cg_A_ID = data.CycloidGearList[0].ID;
     sample.cg_B_ID = data.CycloidGearList[1].ID;
     sample.cs_1_ID = data.CrankShaftList[0].ID;
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     sample.acbb_h = data.AngularContactBallBearingConfig.acbb_h_range;
     sample.shim_1 = range(data.ShimConfig.shim,data.ShimConfig.shim);
     sample.shim_2 = range(data.ShimConfig.shim,data.ShimConfig.shim);
+    sample.np = range(0.01,0.02);
     for(int i=0;i<15;i++){
         ret.push_back(sample);
     }

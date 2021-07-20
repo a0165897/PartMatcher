@@ -526,6 +526,8 @@ bool partData::saveTo(QVector<re>& from,QString& _to){
 
         to.write(head.row+bias++,head.col+i,from[i].shim_1.toVariant());
         to.write(head.row+bias++,head.col+i,from[i].shim_2.toVariant());
+
+        to.write(head.row+bias++,head.col+i,from[i].np.toVariant());
     }
     to.save();
     return true;
@@ -570,10 +572,9 @@ QMap<QString,cell>& partData::idToCell(idType type){
 void partData::colNumToColName(int columnNumber, QString &res){
     while (columnNumber > 0) {
         int a0 = (columnNumber - 1) % 26 + 1;
-        res += a0 - 1 + 'A';
+        res = (a0 - 1 + 'A') + res;
         columnNumber = (columnNumber - a0) / 26;
     }
-    std::reverse(res.begin(), res.end());
 }
 
 
