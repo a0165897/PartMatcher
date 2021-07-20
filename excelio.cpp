@@ -565,22 +565,16 @@ QMap<QString,cell>& partData::idToCell(idType type){
     }
 }
 
-void partData::colNumToColName(int data, QString &res)
-{
-    Q_ASSERT(data>0 && data<65535);
-    int tempData = data / 26;
-    if(tempData > 0)
-    {
-        int mode = data % 26;
-        colNumToColName(mode,res);
-        colNumToColName(tempData,res);
-    }
-    else
-    {
-        res=(QString(data+0x40) + res);//0x40 = 'A'-1
-    }
-}
 
+
+void partData::colNumToColName(int columnNumber, QString &res){
+    while (columnNumber > 0) {
+        int a0 = (columnNumber - 1) % 26 + 1;
+        res += a0 - 1 + 'A';
+        columnNumber = (columnNumber - a0) / 26;
+    }
+    std::reverse(res.begin(), res.end());
+}
 
 
 bool partData::cleanSheet(idType type, QVector<re>& from){
@@ -608,7 +602,7 @@ bool partData::cleanSheet(idType type, QVector<re>& from){
         colNumToColName(tmp.col,cell2);
         cell2 += QString::number(rowFinal-1);
         QString rangeStr = cell1 + ":" + cell2;
-
+        qDebug()<<p.getIdOf(type)<<":"<<rangeStr;
         auto single = COMSheet->querySubObject("Range(const QString&)",rangeStr);
         single->setProperty("Value",blankRange);
 
