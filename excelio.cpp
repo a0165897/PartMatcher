@@ -2,9 +2,12 @@
 
 EXCELIOBEGIN
 
+#define ag(x) arg((x),2,10,QLatin1Char('0'))
+
 bool partData::initializeComInterface(){
     COMExcel = new QAxObject("Excel.Application");
     COMExcel->setProperty("Visible", false);
+    COMExcel->setProperty("DisplayAlerts", false);
     COMInterface = COMExcel->querySubObject("WorkBooks")->querySubObject("Open (const QString&)", QDir::toNativeSeparators(sourceExcelName));
     return true;
 }
@@ -529,26 +532,22 @@ bool partData::saveTo(QVector<re>& from,QString& _to){
 
         to.write(head.row+bias++,head.col+i,from[i].np.toVariant());
     }
-    to.save();
+    int getDot = _to.indexOf('.');
+
+    QDate D = QDate::currentDate();
+    QTime T = QTime::currentTime();
+
+    QString stamp =QStringLiteral("_%1%2%3_%4%5").ag(D.year()).ag(D.month()).ag(D.day()).ag(T.hour()).ag(T.minute());
+
+    QString cleanedExcelName = _to.leftRef(getDot)+stamp+QStringLiteral(".xlsx");
+    to.saveAs(cleanedExcelName);
     return true;
 }
-
-bool partData::cleanSrc(QVector<re> &from){
-    cleanSheet(idType::pwc_ID,from);
-    cleanSheet(idType::pc_ID,from);
-    cleanSheet(idType::cg_A_ID,from);
-    cleanSheet(idType::cg_B_ID,from);
-    cleanSheet(idType::cs_1_ID,from);
-    cleanSheet(idType::cs_2_ID,from);
-
-    int getDot = sourceExcelName.indexOf('.');
-    QString cleanedExcelName = sourceExcelName.leftRef(getDot)+QStringLiteral("_匹配剩余.xlsx");
-    COMInterface->dynamicCall("SaveAs(QString)",QDir::toNativeSeparators(cleanedExcelName));
-    return true;
-}
-
 
 QMap<QString,cell>& partData::idToCell(idType type){
+    /*
+    零件类型->[ID,cell序号]表
+    */
     switch (type) {
     case idType::pwc_ID:
         return PinWheelHousingDic;
@@ -556,10 +555,12 @@ QMap<QString,cell>& partData::idToCell(idType type){
     case idType::pc_ID:
         return PlanetCarrierDic;
         break;
+    case idType::cg_ID:
     case idType::cg_A_ID:
     case idType::cg_B_ID:
         return RoughCycloidGearDic;
         break;
+    case idType::cs_ID:
     case idType::cs_1_ID:
     case idType::cs_2_ID:
         return CrankShaftDic;
@@ -567,7 +568,53 @@ QMap<QString,cell>& partData::idToCell(idType type){
     }
 }
 
+bool partData::cleanSrc(QVector<re> &needToBeDeleted){
+    /*
+    使用Excel COM自带的Delete方法删除特定范围内的数据，excel会将右侧数据左移。
+    因此，Delete一列数据后，右侧数据位置会发生偏移，Map中存储的cell会失效。
+    所以，先将一张sheet中所有待删列的列号合并一起(例如cgA,cgB)，
+    再一次性从右至左删除，来防止失效。
+    */
+    int pwcRow=1,pcRow=1,cgRow=1,csRow=1;
+    std::list<int> pwcCol,pcCol,cgCol,csCol;
 
+    mergeResults(idType::pwc_ID,needToBeDeleted,pwcCol,pwcRow);
+    mergeResults(idType::pc_ID,needToBeDeleted,pcCol,pcRow);
+    mergeResults(idType::cg_A_ID,needToBeDeleted,cgCol,cgRow);
+    mergeResults(idType::cg_B_ID,needToBeDeleted,cgCol,cgRow);
+    mergeResults(idType::cs_1_ID,needToBeDeleted,csCol,csRow);
+    mergeResults(idType::cs_2_ID,needToBeDeleted,csCol,csRow);
+
+    cleanSheet(idType::pwc_ID,pwcCol,pwcRow);
+    cleanSheet(idType::pc_ID,pcCol,pcRow);
+    cleanSheet(idType::cg_ID,cgCol,cgRow);
+    cleanSheet(idType::cs_ID,csCol,csRow);
+
+    int getDot = sourceExcelName.indexOf('.');
+    QDate D = QDate::currentDate();
+    QTime T = QTime::currentTime();
+
+    QString stamp =QStringLiteral("_%1%2%3_%4%5").ag(D.year()).ag(D.month()).ag(D.day()).ag(T.hour()).ag(T.minute());
+
+    QString cleanedExcelName = sourceExcelName.leftRef(getDot)+stamp+QStringLiteral(".xlsx");
+    COMInterface->dynamicCall("SaveAs(QString)",QDir::toNativeSeparators(cleanedExcelName));
+    return true;
+}
+
+bool partData::mergeResults(idType type,QVector<re>& from,std::list<int>& colList,int& row){
+    /*
+    type，vector<result> -> 抽取type类型零件ID对应cell的行号和列号链表
+    */
+    auto& dicUsed = idToCell(type);
+    for(auto& p : from){
+        colList.push_back(dicUsed[p.getIdOf(type)].col);
+        row = dicUsed[p.getIdOf(type)].row;//它会被多次赋上同一个值，先这么着吧。
+    }
+    colList.sort();
+    colList.unique();
+    colList.reverse();
+    return true;
+}
 
 void partData::colNumToColName(int columnNumber, QString &res){
     while (columnNumber > 0) {
@@ -577,35 +624,27 @@ void partData::colNumToColName(int columnNumber, QString &res){
     }
 }
 
-
-bool partData::cleanSheet(idType type, QVector<re>& from){
+bool partData::cleanSheet(idType type, std::list<int>& colList , int& row){
     //ini qxlsx
     excelBook->selectSheet(whichSheetHaveThis(idToPart[type]));
     //ini com
     auto COMSheet = COMInterface->querySubObject("Sheets");
     COMSheet = COMSheet->querySubObject("Item(QString&)",whichSheetHaveThis(idToPart[type]));
 
-    auto& dicUsed = idToCell(type);
-    int rowFinal = lookFor(QStringLiteral("检验结果"),[](const QString &a,const QString &b){return a==b;},1,1,300,2).row;
-    //fake a column
-    QVariantList _blankRange;
-    for(int i=0;i<rowFinal - dicUsed[0].row;i++){
-        _blankRange.append(QList<QVariant>()<<"");
-    }
-    QVariant blankRange = QVariant(_blankRange);
+    int rowFinal = lookFor(QStringLiteral("检验结果"),
+                           [](const QString &a,const QString &b){return a==b;} ,1,1,300,2).row;
 
-    for(auto& p : from){
-        cell tmp = dicUsed[p.getIdOf(type)];
-
+    for(auto& col : colList){
+        //这条result里 此type的ID 对应的cell
+        cell tmp = cell(row,col);
         QString cell1,cell2;
         colNumToColName(tmp.col,cell1);
         cell1 += QString::number(tmp.row);
         colNumToColName(tmp.col,cell2);
         cell2 += QString::number(rowFinal-1);
         QString rangeStr = cell1 + ":" + cell2;
-        qDebug()<<p.getIdOf(type)<<":"<<rangeStr;
         auto single = COMSheet->querySubObject("Range(const QString&)",rangeStr);
-        single->setProperty("Value",blankRange);
+        single->dynamicCall("Delete()");
 
     }
     return true;

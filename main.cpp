@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     re sample;
     sample.pwc_ID = data.PinWheelHousingList[22].ID;
     sample.cg_A_ID = data.CycloidGearList[0].ID;
-    sample.cg_B_ID = data.CycloidGearList[1].ID;
+    sample.cg_B_ID = data.CycloidGearList[0].ID_vice;
     sample.cs_1_ID = data.CrankShaftList[0].ID;
     sample.cs_2_ID = data.CrankShaftList[1].ID;
     sample.pc_ID = data.PlanetCarrierList[0].ID;

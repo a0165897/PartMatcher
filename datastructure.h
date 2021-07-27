@@ -168,12 +168,14 @@ typedef struct configuration //公式中范围的配置文件
 
 /*输出项*/
 
-enum idType{pwc_ID,pc_ID,cg_A_ID,cg_B_ID,cs_1_ID,cs_2_ID};
+enum idType{pwc_ID,pc_ID,cg_ID,cg_A_ID,cg_B_ID,cs_ID,cs_1_ID,cs_2_ID};
 const QMap<idType,partType> idToPart = {
     {pwc_ID,PinWheelHousing},
     {pc_ID,PlanetCarrier},
+    {cg_ID,CycloidGear},
     {cg_A_ID,CycloidGear},
     {cg_B_ID,CycloidGear},
+    {cs_ID,CrankShaft},
     {cs_1_ID,CrankShaft},
     {cs_2_ID,CrankShaft}
 };

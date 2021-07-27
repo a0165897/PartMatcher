@@ -60,7 +60,7 @@ public:
         excelBook = nullptr;
     }
     bool saveTo(QVector<re>& from,QString& to);
-    bool cleanSrc(QVector<re>& from);
+    bool cleanSrc(QVector<re>& needToBeDeleted);
     /*数据*/
     QVector<pwh> PinWheelHousingList;//针齿壳
     QVector<pc> PlanetCarrierList;//行星架
@@ -112,7 +112,9 @@ private:
     /*原始数据清理*/
     QMap<QString,cell>& idToCell(idType type);
     void colNumToColName(int data, QString &res);
-    bool cleanSheet(idType type, QVector<re>& from);
+    //单张sheet上所有待删除的cell
+    bool mergeResults(idType type,QVector<re>& from,std::list<int>& colList,int& row);
+    bool cleanSheet(idType type, std::list<int>& colList,int& row);
 };
 
 EXCELIOEND
